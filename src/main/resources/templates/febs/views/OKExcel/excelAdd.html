@@ -1,0 +1,216 @@
+<style>
+    #user-add {
+        padding: 20px 25px 25px 0;
+    }
+
+    #user-add .layui-treeSelect .ztree li a, .ztree li span {
+        margin: 0 0 2px 3px !important;
+    }
+
+    #user-add #data-permission-tree-block {
+        border: 1px solid #eee;
+        border-radius: 2px;
+        padding: 3px 0;
+    }
+
+    #user-add .layui-treeSelect .ztree li span.button.switch {
+        top: 1px;
+        left: 3px;
+    }
+
+    .layui-layer-page .layui-layer-lineNumber {
+        overflow: visible !important;
+    }
+
+    body {
+        margin: 10px;
+    }
+    .demo-carousel {
+        height: 200px;
+        line-height: 200px;
+        text-align: center;
+    }
+</style>
+<div class="layui-fluid" id="OKExcel-add">
+    <body>
+        <form class="layui-form" action="" lay-filter="OKExcel-add-form">
+            <textarea type="hidden" value="" name="excelData" id="excelData" style="display: none"/>
+            <!--<div class="layui-row">
+                <div class="layui-form-item layui-col-xs6">
+                    <label class="layui-form-label febs-form-item-require">目标数数：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="total" id="total" maxlength="20" lay-verify="range|required"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-col-xs6">
+                        <label class="layui-form-label febs-form-item-require">excel行数：</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="" id="lineNumber"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                </div>
+            </div>-->
+
+            <div class="layui-row">
+                <div class="layui-col-xs6">
+                    <label class="layui-form-label febs-form-item-require">目标数数：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="total" id="total" maxlength="20" lay-verify="range|required"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-col-xs6">
+                    <label class="layui-form-label febs-form-item-require">excel行数：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="lineNumber" id="lineNumber"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-row">
+                <div class="layui-col-xs6">
+                    <label class="layui-form-label febs-form-item-require">重复数量：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="repeatNumber" id="repeatNumber" maxlength="50"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class=" layui-col-xs6">
+                    <label class="layui-form-label">重复数据：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="repeatData" id="repeatData"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-row">
+                <div class="layui-col-xs12">
+                    <div class="layui-col-xs6">
+                        <label class="layui-form-label">上传文件：</label>
+                        <div class="layui-upload-drag" id="test10">
+                            <i class="layui-icon"></i>
+                            <p>点击上传，或将文件拖拽到此处</p>
+                            <hr>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-xs6">
+                    <label class="layui-form-label">文件名：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="excelName" maxlength="50" id="fileName"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-col-xs6">
+                    <label class="layui-form-label">文件地址：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="excelPath" maxlength="50" id="filePath"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-col-xs12">
+                    <label class="layui-form-label">回调数据：</label>
+                    <div class="layui-input-block">
+                        <!--                        <table class="layui-table" id="table1"></table>-->
+                        <table lay-filter="jobTable" lay-data="{id: 'jobTable'}"></table>
+                    </div>
+
+                </div>
+                <div class="layui-form-item layui-form-text layui-col-xs12">
+                    <label class="layui-form-label">任务备注：</label>
+                    <div class="layui-input-block">
+                        <textarea name="text1" maxlength="50" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="layui-form-item febs-hide">
+                <button class="layui-btn" lay-submit="" lay-filter="OKExcel-add-form-submit" id="submit"></button>
+                <button type="reset" class="layui-btn" id="reset"></button>
+            </div>
+
+        </form>
+    </body>
+</div>
+<script th:inline="none">
+    layui.use(['febs','laypage', 'layer', 'table','jquery','upload','form','dropdown', 'util'], function(){
+        let $ = layui.$,
+            febs = layui.febs
+            ,laypage = layui.laypage //分页
+            ,element = layui.element
+            ,layer = layui.layer //弹层
+            ,table = layui.table //表格
+            ,upload=layui.upload
+            ,form = layui.form
+            , $view = $('#OKExcel-add')
+            ,tableIns;
+
+
+
+        form.on('submit(OKExcel-add-form-submit)', function (data) {
+            febs.post(ctx + 'OKExcel', data.field, function () {
+                layer.closeAll();
+                febs.alert.success('新增任务成功');
+                $('#febs-OKExcel').find('#query').click();
+            });
+            return false;
+        });
+
+
+
+
+        //拖拽上传
+        upload.render({
+            elem: '#test10'
+            ,url: ctx+ 'fileUpload/uploadExcel' //改成您自己的上传接口
+            ,accept:"file"
+            ,done: function(res){
+                $("#excelData").val(JSON.stringify(res));
+                let  te = JSON.parse(res.result);
+                let  datas = te.data;
+                $("#fileName").val(res.newName);
+                $("#filePath").val(res.newFilePath);
+                 if(te !=null){
+                     // layer.msg(res.message);
+                     $("#lineNumber").val(te.count+","+te.colnum);
+                     $("#total").val(te.screen);
+                     $("#repeatNumber").val(te.Duplicate);
+                     $("#repeatData").val(JSON.stringify(te.DuplicateData));
+
+                     initTable(datas);
+
+                 }else{
+                     $("#lineNumber").val("");
+                     $("#total").val("");
+                     $("#repeatNumber").val("");
+                     $("#repeatData").val("");
+                 }
+            }
+        });
+        function initTable(datas) {
+            tableIns = febs.table.init({
+                elem: $view.find('table'),
+                id: 'jobTable',
+                data: datas,
+                cols: [[
+                    {type: 'checkbox'},
+                    {field: 'customer', title: '顾客', width: 80},
+                    {field: 'productName', title: '产品名称'},
+                    {field: 'trackNumber', title: '发货单号', maxWidth: 200},
+                    {field: 'express', title: '快递公司', maxWidth: 180},
+                    {field: 'orderNumber', title: 'muhai官网订单号', maxWidth: 180},
+                    {field: 'courierNumbers', title: '物流订单号', maxWidth: 200}
+                ]]
+            });
+        }
+
+        //监听折叠
+        element.on('collapse(test)', function(data){
+            layer.msg('展开状态：'+ data.show);
+        });
+    });
+
+</script>

@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>cc.mrbird</groupId>
-    <artifactId>FEBS-Shiro</artifactId>
+    <artifactId>OKSoftWare</artifactId>
     <version>2.0</version>
     <name>febs</name>
     <description>Spring Boot,Shiro 权限管理系统，https://github.com/wuyouzhuguli/FEBS-Shiro</description>
@@ -21,6 +21,7 @@
         <jsoup.version>1.12.1</jsoup.version>
         <xml-apis.version>1.4.01</xml-apis.version>
         <excelKit.version>2.0.72</excelKit.version>
+        <json.version>1.2.73</json.version>
         <ip2region.version>1.7.2</ip2region.version>
         <commons-io.version>2.8.0</commons-io.version>
         <shiro.redis.version>3.3.1</shiro.redis.version>
@@ -82,7 +83,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${json.version}</version>
+        </dependency>
         <!-- 任务调度 -->
         <dependency>
             <groupId>org.quartz-scheduler</groupId>

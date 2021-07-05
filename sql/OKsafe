@@ -1,0 +1,22 @@
+示例：
+订单号：2021061003519301
+物流公司：顺丰快递
+物流单号：SF1300414538167
+备注：发货备注
+
+1.根据订单号查询出order_id, store_id
+select order_id, store_id from gmtx_order where order_sn = "2021061003519301";
+此时order_id = 36098, store_id = 16
+
+2.根据物流公司查询出该物流公司编号
+select id from gmtx_express where e_name = "顺丰快递";
+此时物流公司编号为29
+
+3.更新gmtx_order表
+update gmtx_order set shipping_code = "SF1300414538167", order_state = 30, delay_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
+
+4.更新gmtx_order_common表
+update gmtx_order_common set deliver_explain = "发货备注", shipping_express_id = 29, shipping_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
+
+5.插入gmtx_order_log表
+insert into gmtx_order_log (order_id, log_role, log_user, log_msg, log_orderstate, log_time) values (36098, "商家", "系统", "发出了货物 ( 编辑了发货信息 )", "30", unix_timestamp(now()));
