@@ -167,8 +167,10 @@
                     area: $(window).width() <= 750 ? '90%' : '50%',
                     offset: '30px',
                     btn: [/*'提交',*/ '取消'],
+                    anim:4,
                     yes: function (index, layero) {
-                        $('#OKExcel-update').find('#submit').trigger('click');
+                        layer.closeAll();
+                        // $('#OKExcel-update').find('#submit').trigger('click');
                     },
                     btn2: function () {
                         layer.closeAll();

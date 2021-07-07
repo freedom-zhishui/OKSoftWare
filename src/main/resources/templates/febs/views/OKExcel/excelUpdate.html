@@ -104,12 +104,13 @@
 </div>
 
 <script data-th-inline="javascript">
-    layui.use(['jquery', 'febs', 'form', 'validate'], function () {
+    layui.use(['jquery', 'febs', 'form', 'validate','upload'], function () {
         var $ = layui.jquery,
             febs = layui.febs,
             form = layui.form,
             okExcel = [[${okExcel}]],
             $view = $('#OKExcel-update'),
+            upload=layui.upload,
             validate = layui.validate;
 
         form.verify(validate);
