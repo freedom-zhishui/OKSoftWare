@@ -84,9 +84,11 @@
             $delete = $view.find('#delete'),
             $searchForm = $view.find('form'),
             sortObject = {field: 'time', type: null},
+            $jumpWindows = $view.find('#jumpWindows'),
             tableIns,
             createTimeFrom,
-            createTimeTo;
+            createTimeTo,
+            repeatDataStr;
 
         laydate.render({
             elem: '#log-createTime',
@@ -116,15 +118,15 @@
                 }
                 if (name === 'add') {
                     febs.modal.open('导入OK软件Excel', 'OKExcel/excel/add', {
-                        btn: ['提交', '重置'],
-                        area: $(window).width() <= 750 ? '95%' : '50%',
+                        btn: ['提交', '取消'],
+                        area: $(window).width() <= 750 ? '95%' : '60%',
                         offset: '30px',
                         content: 'OKExcel/excelAdd.html',
                         yes: function (index, layero) {
                             $('#OKExcel-add').find('#submit').trigger('click');
                         },
                         btn2: function () {
-                            $('#OKExcel-add').find('#reset').trigger('click');
+                            layer.closeAll();
                             return false;
                         }
                     });
@@ -215,17 +217,58 @@
                     {type: 'checkbox'},
                     {field: 'id', title: '编号'},
                     {field: 'excelName', title: '上传文件名称'},
-                    {field: 'excelPath', title: '文件下载',templet:"#download"},
+                    {field: 'excelPath', title: '文件下载'},
                     {field: 'total', title: '总数量'},
                     {field: 'updateNumber', title: '更新数量'},
                     {field: 'repeatNumber', title: '重复数量'},
-                    {field: 'repeatData', title: '重复数据'},
+                    {field: 'repeatData', title: '重复数据',templet:repeat},
                     {field: 'userName', title: '操作人'},
                     {field: 'uploadTime', title: '上传时间', minWidth: 180, sort: true},
                     {title: '操作', toolbar: '#log-option'}
                 ]]
             });
         }
+
+        function repeat(d){
+            let str;
+            if(d.repeatData != null &&  d.repeatData!=""){
+                repeatDataStr = d.repeatData;
+                str='<button type="button" class="layui-btn layui-btn-normal layui-icon-export" id="jumpWindows" >查看</button><p style="display: none" id="jumps">'+repeatDataStr+'</p>'
+
+            }else{
+                str='<p>无重复数据</p>'
+            }
+            return str;
+        }
+
+        $(document).on('click','#jumpWindows',function() {
+
+            let  str='<table class="layui-table"><tr><td class="layui-fluid">顾客</td><td>产品名称</td><td>发货单号</td><td>快递公司</td><td>muhai官网订单号</td><td>物流订单号</td></tr>'
+            let data = JSON.parse(repeatDataStr);
+            for (let i=0;i<data.length;i++){
+                str+= '<tr><td>'+data[i].customer+'</td><td>'+data[i].productName+'</td><td>'+data[i].trackNumber+'</td><td>'+data[i].express+'</td><td>'+data[i].orderNumber+'</td><td>'+ data[i].courierNumbers+'</td></tr>';
+            }
+            str+='</table>';
+
+
+            // layer.msg(repeatDataStr);
+            layer.open({
+                area: $(window).width() <= 750 ? '90%' : '70%',
+                title:"excel表重复数据",
+                btn: ["关闭"],
+                yes: function (index, layero) {
+                    layer.closeAll();
+                },
+                type: 1,
+                anim: 4,
+                offset: '30px',
+                content:str //这里content是一个普通的String
+            });
+        })
+
+
+
+
 
         function deleteLogs(deptIds) {
             febs.get(ctx + 'OKExcel/delete/' + deptIds, null, function () {
@@ -242,6 +285,5 @@
         }
     })
 </script>
-<script type="text/html" id="download">
-    <a href="{{ d.excelPath}}"/>
-</script>
+
+

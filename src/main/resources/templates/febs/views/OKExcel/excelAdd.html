@@ -69,17 +69,10 @@
                 </div>
             </div>
             <div class="layui-row">
-                <div class="layui-col-xs6">
+                <div class="layui-col-xs12">
                     <label class="layui-form-label febs-form-item-require">重复数量：</label>
                     <div class="layui-input-block">
                         <input type="text" name="repeatNumber" id="repeatNumber" maxlength="50"
-                               autocomplete="off" class="layui-input">
-                    </div>
-                </div>
-                <div class=" layui-col-xs6">
-                    <label class="layui-form-label">重复数据：</label>
-                    <div class="layui-input-block">
-                        <input type="text" name="repeatData" id="repeatData"
                                autocomplete="off" class="layui-input">
                     </div>
                 </div>
@@ -114,9 +107,17 @@
                     <label class="layui-form-label">回调数据：</label>
                     <div class="layui-input-block">
                         <!--                        <table class="layui-table" id="table1"></table>-->
-                        <table lay-filter="jobTable" lay-data="{id: 'jobTable'}"></table>
+                        <table id="jobTable" lay-filter="jobTable" lay-data="{id: 'jobTable'}"></table>
                     </div>
 
+                </div>
+                <div class=" layui-col-xs12">
+                    <label class="layui-form-label">重复数据：</label>
+                    <div class="layui-input-block">
+                        <input type="hidden" name="repeatData" id="repeatData"
+                               autocomplete="off" class="layui-input">
+                        <table id="repeat"></table>
+                    </div>
                 </div>
                 <div class="layui-form-item layui-form-text layui-col-xs12">
                     <label class="layui-form-label">任务备注：</label>
@@ -146,7 +147,8 @@
             ,upload=layui.upload
             ,form = layui.form
             , $view = $('#OKExcel-add')
-            ,tableIns;
+            ,tableIns
+            ,repeat;
 
 
 
@@ -171,9 +173,11 @@
                 $("#excelData").val(JSON.stringify(res));
                 let  te = JSON.parse(res.result);
                 let  datas = te.data;
+                let  data1 = te.DuplicateData;
                 $("#fileName").val(res.newName);
                 $("#filePath").val(res.newFilePath);
-                 if(te !=null){
+
+                if(te !=null){
                      // layer.msg(res.message);
                      $("#lineNumber").val(te.count+","+te.colnum);
                      $("#total").val(te.screen);
@@ -181,6 +185,7 @@
                      $("#repeatData").val(JSON.stringify(te.DuplicateData));
 
                      initTable(datas);
+                     initTable1(data1);
 
                  }else{
                      $("#lineNumber").val("");
@@ -192,7 +197,7 @@
         });
         function initTable(datas) {
             tableIns = febs.table.init({
-                elem: $view.find('table'),
+                elem: '#jobTable',
                 id: 'jobTable',
                 data: datas,
                 cols: [[
@@ -205,7 +210,24 @@
                     {field: 'courierNumbers', title: '物流订单号', maxWidth: 200}
                 ]]
             });
+
         }
+        function initTable1(data1){
+            repeat = table.render({
+                elem: '#repeat',
+                data: data1,
+                cols: [[
+                    {type: 'checkbox'},
+                    {field: 'customer', title: '顾客', width: 80},
+                    {field: 'productName', title: '产品名称'},
+                    {field: 'trackNumber', title: '发货单号', maxWidth: 200},
+                    {field: 'express', title: '快递公司', maxWidth: 180},
+                    {field: 'orderNumber', title: 'muhai官网订单号', maxWidth: 180},
+                    {field: 'courierNumbers', title: '物流订单号', maxWidth: 200}
+                ]]
+            });
+        }
+
 
         //监听折叠
         element.on('collapse(test)', function(data){

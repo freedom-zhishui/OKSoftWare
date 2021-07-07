@@ -1,9 +1,7 @@
 package cc.mrbird.febs.OKExcel.excel;
 
 import cc.mrbird.febs.OKExcel.entity.OKContent;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.sun.istack.internal.logging.Logger;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -96,9 +94,7 @@ public class ReadExcel {
             // 用来存放表中数据
             list = new ArrayList<Map<String, String>>();
             // 获取第一个sheet
-
             // wb.getSheet(0)
-
             int sheetNum = wb.getNumberOfSheets();
             System.out.println("sheet个数：" + sheetNum);
             // 收集订单号
@@ -254,13 +250,8 @@ public class ReadExcel {
             mapResult.put("DuplicateData",duplicateList);
             mapResult.put("orderNumbers",orderNumbers);
 
-            log.info("result is {}", JSONObject.toJSONString(mapResult));
-            /*
-             * for (Map<String,String> map : list) { for (Entry<String,String>
-             * entry : map.entrySet()) {
-             * System.out.print(entry.getKey()+":"+entry.getValue()+","); }
-             * System.out.println(); }
-             */
+//            log.info("result is {}", JSONObject.toJSONString(mapResult));
+
 
         }
         return  JSONObject.toJSONString(mapResult);
@@ -278,7 +269,6 @@ public class ReadExcel {
                 firstIndex  = index;
                 break;
             }
-
         }
         return  firstIndex;
     }

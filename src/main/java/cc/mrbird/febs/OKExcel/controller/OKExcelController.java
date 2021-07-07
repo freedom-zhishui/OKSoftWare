@@ -69,7 +69,6 @@ public class OKExcelController extends BaseController {
         String updateMsg = "gmtx_order更新数量=" + map.get("gmtxOrderCount").toString() + ", gmtx_order_common更新数量"
                 + map.get("gmtxOrderCommonCount").toString() + ",gmtx_order_log插入数量= " + map.get("mgtxOrderLogCount").toString()
                 + ",失效的更新操作（数据库中已有物流单号，故不作更新）数量=  " +  map.get("gmtxCount").toString();
-        System.out.println("返回结果：" + updateMsg);
         List<OKContent> okContents  = (List<OKContent>) map.get("okContentList");
         if(okContents.size()>0){
             String result = JSONArray.toJSONString(okContents);
