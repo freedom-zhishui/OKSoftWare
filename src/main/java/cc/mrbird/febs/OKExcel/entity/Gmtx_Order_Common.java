@@ -76,7 +76,7 @@ public class Gmtx_Order_Common {
      * 配送时间
      */
     @TableField("shipping_time")
-    private String shipping_time;
+    private int shipping_time;
 //    /*
 //    * 状态
 //    */

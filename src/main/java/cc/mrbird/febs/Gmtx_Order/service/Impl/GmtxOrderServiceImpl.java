@@ -61,7 +61,7 @@ public class GmtxOrderServiceImpl extends ServiceImpl<Gmtx_OrderMapper, Gmtx_Ord
         queryWrapper.eq("store_id", gmtxOrder.getStoreId());
 
         int i = baseMapper.update(gmtxOrder, queryWrapper);
-        System.out.println("影响的行数：" + i);
+//        System.out.println("影响的行数：" + i);
         return i;
     }
 }

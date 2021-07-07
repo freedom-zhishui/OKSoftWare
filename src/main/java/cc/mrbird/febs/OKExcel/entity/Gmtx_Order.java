@@ -77,7 +77,7 @@ public class Gmtx_Order {
      * 延迟时间,默认为0
      */
     @TableField("delay_time")
-    private String delayTime;
+    private int delayTime;
 //    /*
 //    * 状态
 //    */

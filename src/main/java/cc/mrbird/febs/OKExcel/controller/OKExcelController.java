@@ -141,6 +141,8 @@ public class OKExcelController extends BaseController {
                     //3.更新gmtx_order表
                     //update gmtx_order set shipping_code = "SF1300414538167", order_state = 30, delay_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
                     gmtx_order.setShippingCode(okContent.getCourierNumbers());
+                    // 时间戳
+                    gmtx_order.setDelayTime( (int) (System.currentTimeMillis() / 1000));
                     gmtxOrderCount.addAndGet(gmtxOrderService.updateGmtxOrder(okContent, gmtx_order));
 
                     //4.更新gmtx_order_common表
@@ -150,6 +152,7 @@ public class OKExcelController extends BaseController {
                     gmtxOrderCommon.setShippingExpressId(gmtx_express.getId());
                     gmtxOrderCommon.setOrderId(gmtx_order.getOrderId());
                     gmtxOrderCommon.setStoreId(gmtx_order.getStoreId());
+                    gmtxOrderCommon.setShipping_time((int) (System.currentTimeMillis() / 1000));
                     gmtxOrderCommonCount.addAndGet(gmtxOrderCommonService.updateOrderCommon(gmtxOrderCommon));
 
                     //5.插入gmtx_order_log表
