@@ -29,8 +29,11 @@ spring:
         muhai:
           username: root
           password: 111111
+        #外网测试  password: muhai_db_2016
           driver-class-name: com.mysql.cj.jdbc.Driver
           url: jdbc:mysql://127.0.0.1:3306/ok_gmtx_test_muhai?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2b8
+          # 外网测试
+#          url: jdbc:mysql://192.168.3.113:3306/gmtx_test_muhai?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2b8
 
   redis:
     database: 0
