@@ -120,53 +120,55 @@ public class OKExcelController extends BaseController {
             gmtx_order = gmtxOrderService.findGmtxOrder(gmtx_order);
             /*如果订单的shipping_code已存在，则不作更新操作（excel中存在一个订单号对应多个物流单号的情况
              和工作室仲文婷沟通后，在一个订单号对应多个不同的物流单号时，存一个物流单号即可） */
-            if(StringUtils.isNotBlank(gmtx_order.getShippingCode())){
-               // 如果物流单号不为空则记录数量
-                gmtxCount.addAndGet(1);
-            }else{
-                  /*2.根据物流公司查询出该物流公司编号 select id from gmtx_express where e_name = "顺丰快递";*/
-                Gmtx_Express gmtx_express = new Gmtx_Express();
-                String express = "";
-                if (okContent.getExpress().contains("-")) {
-                    String[] data = okContent.getExpress().split("-");
-                    express = data[0];
-                } else {
-                    express = okContent.getExpress();
+            if(gmtx_order != null){
+                if(StringUtils.isNotBlank(gmtx_order.getShippingCode())){
+                    // 如果物流单号不为空则记录数量
+                    gmtxCount.addAndGet(1);
+                }else{
+                    /*2.根据物流公司查询出该物流公司编号 select id from gmtx_express where e_name = "顺丰快递";*/
+                    Gmtx_Express gmtx_express = new Gmtx_Express();
+                    String express = "";
+                    if (okContent.getExpress().contains("-")) {
+                        String[] data = okContent.getExpress().split("-");
+                        express = data[0];
+                    } else {
+                        express = okContent.getExpress();
+                    }
+                    gmtx_express.setEName(express);
+                    // 获取到完整的物流订单信息
+                    gmtx_express = gmtxExpressService.findgmtxExpress(gmtx_express);
+
+                    //3.更新gmtx_order表
+                    //update gmtx_order set shipping_code = "SF1300414538167", order_state = 30, delay_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
+                    gmtx_order.setShippingCode(okContent.getCourierNumbers());
+                    gmtxOrderCount.addAndGet(gmtxOrderService.updateGmtxOrder(okContent, gmtx_order));
+
+                    //4.更新gmtx_order_common表
+                    //update gmtx_order_common set deliver_explain = "发货备注", shipping_express_id = 29, shipping_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
+                    Gmtx_Order_Common gmtxOrderCommon = new Gmtx_Order_Common();
+                    gmtxOrderCommon.setDeliverExplain("发货备注");
+                    gmtxOrderCommon.setShippingExpressId(gmtx_express.getId());
+                    gmtxOrderCommon.setOrderId(gmtx_order.getOrderId());
+                    gmtxOrderCommon.setStoreId(gmtx_order.getStoreId());
+                    gmtxOrderCommonCount.addAndGet(gmtxOrderCommonService.updateOrderCommon(gmtxOrderCommon));
+
+                    //5.插入gmtx_order_log表
+                    //insert into gmtx_order_log (order_id, log_role, log_user, log_msg, log_orderstate, log_time) values (36098, "商家", "系统", "发出了货物 ( 编辑了发货信息 )", "30", unix_timestamp(now()));
+                    Gmtx_Order_Log orderLog = new Gmtx_Order_Log();
+                    orderLog.setOrderId((int) gmtx_order.getOrderId());
+                    orderLog.setLogMsg("发出了货物 ( 编辑了发货信息 )");
+                    orderLog.setLogRole("商家");
+                    orderLog.setLogUser("muhai");
+                    orderLog.setLogOrderstate("30");
+                    orderLog.setLogTime((int) (System.currentTimeMillis() / 1000));
+                    gmtxOrderLogService.saveLog(orderLog);
+                    mgtxOrderLogCount.addAndGet(1);
+
+                    // 将执行成功的订单号、物流公司、顾客、产品名称放入到
+                    okContentList1.add(okContent);
+
+
                 }
-                gmtx_express.setEName(express);
-                // 获取到完整的物流订单信息
-                gmtx_express = gmtxExpressService.findgmtxExpress(gmtx_express);
-
-                //3.更新gmtx_order表
-                //update gmtx_order set shipping_code = "SF1300414538167", order_state = 30, delay_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
-                gmtx_order.setShippingCode(okContent.getCourierNumbers());
-                gmtxOrderCount.addAndGet(gmtxOrderService.updateGmtxOrder(okContent, gmtx_order));
-
-                //4.更新gmtx_order_common表
-                //update gmtx_order_common set deliver_explain = "发货备注", shipping_express_id = 29, shipping_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
-                Gmtx_Order_Common gmtxOrderCommon = new Gmtx_Order_Common();
-                gmtxOrderCommon.setDeliverExplain("发货备注");
-                gmtxOrderCommon.setShippingExpressId(gmtx_express.getId());
-                gmtxOrderCommon.setOrderId(gmtx_order.getOrderId());
-                gmtxOrderCommon.setStoreId(gmtx_order.getStoreId());
-                gmtxOrderCommonCount.addAndGet(gmtxOrderCommonService.updateOrderCommon(gmtxOrderCommon));
-
-                //5.插入gmtx_order_log表
-                //insert into gmtx_order_log (order_id, log_role, log_user, log_msg, log_orderstate, log_time) values (36098, "商家", "系统", "发出了货物 ( 编辑了发货信息 )", "30", unix_timestamp(now()));
-                Gmtx_Order_Log orderLog = new Gmtx_Order_Log();
-                orderLog.setOrderId((int) gmtx_order.getOrderId());
-                orderLog.setLogMsg("发出了货物 ( 编辑了发货信息 )");
-                orderLog.setLogRole("商家");
-                orderLog.setLogUser("muhai");
-                orderLog.setLogOrderstate("30");
-                orderLog.setLogTime((int) (System.currentTimeMillis() / 1000));
-                gmtxOrderLogService.saveLog(orderLog);
-                mgtxOrderLogCount.addAndGet(1);
-
-                // 将执行成功的订单号、物流公司、顾客、产品名称放入到
-                okContentList1.add(okContent);
-
-
             }
         });
         // 6 返回更新的数据

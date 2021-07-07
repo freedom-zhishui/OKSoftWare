@@ -4,6 +4,7 @@ import cc.mrbird.febs.OKExcel.entity.OKContent;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -173,9 +174,13 @@ public class ReadExcel {
                             }else{
                                 //1.1 将备注内容进行截取，截取格式：\2021041103220701、0801  俞丹=磁悬浮360-540（3框3画）
                                 String year  = getSysYear();
-                                // 沐海官网订单号是以 年+月+日+时分秒
+                                //当前年加一或者减一都可以匹配过
+                                String oldYear = String.valueOf(NumberUtils.toInt(year)-1);
+                                String newYear = String.valueOf(NumberUtils.toInt(year)+1);
 
-                                if(note.contains(year)){
+
+                                // 沐海官网订单号是以 年+月+日+时分秒
+                                if(note.contains(year) || note.contains(oldYear)  || note.contains(newYear)){
                                     // 截取符合需求的沐海订单号
                                     int index  = getWordIndex(note);
                                     note  = note.substring(0,index).trim().replace("\\","");

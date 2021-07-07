@@ -153,6 +153,7 @@
 
 
         form.on('submit(OKExcel-add-form-submit)', function (data) {
+            layer.msg('拼命执行中...', {icon: 16,shade: [0.5, '#f5f5f5'],scrollbar: false,offset: 'auto', time:100000});
             febs.post(ctx + 'OKExcel', data.field, function () {
                 layer.closeAll();
                 febs.alert.success('新增任务成功');
