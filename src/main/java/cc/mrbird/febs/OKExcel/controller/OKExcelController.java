@@ -111,6 +111,8 @@ public class OKExcelController extends BaseController {
         AtomicInteger gmtxCount  = new AtomicInteger();
 
         List<OKContent>  okContentList1  = new ArrayList<>();
+        // 错误的订单信息
+        List<OKContent>  okContentList2  = new ArrayList<>();
         okContentList.forEach(okContent -> {
             //1.根据订单号查询出order_id, store_id
             Gmtx_Order gmtx_order = new Gmtx_Order();
@@ -128,49 +130,52 @@ public class OKExcelController extends BaseController {
                     /*2.根据物流公司查询出该物流公司编号 select id from gmtx_express where e_name = "顺丰快递";*/
                     Gmtx_Express gmtx_express = new Gmtx_Express();
                     String express = "";
-                    if (okContent.getExpress().contains("-")) {
-                        String[] data = okContent.getExpress().split("-");
-                        express = data[0];
-                    } else {
-                        express = okContent.getExpress();
+                    if(StringUtils.isNotBlank(okContent.getExpress())){
+                        if (okContent.getExpress().contains("-")) {
+                            String[] data = okContent.getExpress().split("-");
+                            express = data[0];
+                        } else {
+                            express = okContent.getExpress();
+                        }
+                        gmtx_express.setEName(express);
+                        // 获取到完整的物流订单信息
+                        gmtx_express = gmtxExpressService.findgmtxExpress(gmtx_express);
+
+                        //3.更新gmtx_order表
+                        //update gmtx_order set shipping_code = "SF1300414538167", order_state = 30, delay_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
+                        gmtx_order.setShippingCode(okContent.getCourierNumbers());
+                        // 时间戳
+                        gmtx_order.setDelayTime( (int) (System.currentTimeMillis() / 1000));
+                        gmtxOrderCount.addAndGet(gmtxOrderService.updateGmtxOrder(okContent, gmtx_order));
+
+                        //4.更新gmtx_order_common表
+                        //update gmtx_order_common set deliver_explain = "发货备注", shipping_express_id = 29, shipping_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
+                        Gmtx_Order_Common gmtxOrderCommon = new Gmtx_Order_Common();
+                        gmtxOrderCommon.setDeliverExplain("发货备注");
+                        gmtxOrderCommon.setShippingExpressId(gmtx_express.getId());
+                        gmtxOrderCommon.setOrderId(gmtx_order.getOrderId());
+                        gmtxOrderCommon.setStoreId(gmtx_order.getStoreId());
+                        gmtxOrderCommon.setShipping_time((int) (System.currentTimeMillis() / 1000));
+                        gmtxOrderCommonCount.addAndGet(gmtxOrderCommonService.updateOrderCommon(gmtxOrderCommon));
+
+                        //5.插入gmtx_order_log表
+                        //insert into gmtx_order_log (order_id, log_role, log_user, log_msg, log_orderstate, log_time) values (36098, "商家", "系统", "发出了货物 ( 编辑了发货信息 )", "30", unix_timestamp(now()));
+                        Gmtx_Order_Log orderLog = new Gmtx_Order_Log();
+                        orderLog.setOrderId((int) gmtx_order.getOrderId());
+                        orderLog.setLogMsg("发出了货物 ( 编辑了发货信息 )");
+                        orderLog.setLogRole("商家");
+                        orderLog.setLogUser("muhai");
+                        orderLog.setLogOrderstate("30");
+                        orderLog.setLogTime((int) (System.currentTimeMillis() / 1000));
+                        gmtxOrderLogService.saveLog(orderLog);
+                        mgtxOrderLogCount.addAndGet(1);
+
+                        // 将执行成功的订单号、物流公司、顾客、产品名称放入到
+                        okContentList1.add(okContent);
+                    }else{
+                        // 收集错误的订单信息  2021-07-09
+                        okContentList2.add(okContent);
                     }
-                    gmtx_express.setEName(express);
-                    // 获取到完整的物流订单信息
-                    gmtx_express = gmtxExpressService.findgmtxExpress(gmtx_express);
-
-                    //3.更新gmtx_order表
-                    //update gmtx_order set shipping_code = "SF1300414538167", order_state = 30, delay_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
-                    gmtx_order.setShippingCode(okContent.getCourierNumbers());
-                    // 时间戳
-                    gmtx_order.setDelayTime( (int) (System.currentTimeMillis() / 1000));
-                    gmtxOrderCount.addAndGet(gmtxOrderService.updateGmtxOrder(okContent, gmtx_order));
-
-                    //4.更新gmtx_order_common表
-                    //update gmtx_order_common set deliver_explain = "发货备注", shipping_express_id = 29, shipping_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
-                    Gmtx_Order_Common gmtxOrderCommon = new Gmtx_Order_Common();
-                    gmtxOrderCommon.setDeliverExplain("发货备注");
-                    gmtxOrderCommon.setShippingExpressId(gmtx_express.getId());
-                    gmtxOrderCommon.setOrderId(gmtx_order.getOrderId());
-                    gmtxOrderCommon.setStoreId(gmtx_order.getStoreId());
-                    gmtxOrderCommon.setShipping_time((int) (System.currentTimeMillis() / 1000));
-                    gmtxOrderCommonCount.addAndGet(gmtxOrderCommonService.updateOrderCommon(gmtxOrderCommon));
-
-                    //5.插入gmtx_order_log表
-                    //insert into gmtx_order_log (order_id, log_role, log_user, log_msg, log_orderstate, log_time) values (36098, "商家", "系统", "发出了货物 ( 编辑了发货信息 )", "30", unix_timestamp(now()));
-                    Gmtx_Order_Log orderLog = new Gmtx_Order_Log();
-                    orderLog.setOrderId((int) gmtx_order.getOrderId());
-                    orderLog.setLogMsg("发出了货物 ( 编辑了发货信息 )");
-                    orderLog.setLogRole("商家");
-                    orderLog.setLogUser("muhai");
-                    orderLog.setLogOrderstate("30");
-                    orderLog.setLogTime((int) (System.currentTimeMillis() / 1000));
-                    gmtxOrderLogService.saveLog(orderLog);
-                    mgtxOrderLogCount.addAndGet(1);
-
-                    // 将执行成功的订单号、物流公司、顾客、产品名称放入到
-                    okContentList1.add(okContent);
-
-
                 }
             }
         });
@@ -181,6 +186,7 @@ public class OKExcelController extends BaseController {
         map.put("gmtxOrderCommonCount", gmtxOrderCommonCount);
         map.put("mgtxOrderLogCount", mgtxOrderLogCount);
         map.put("okContentList", okContentList1);
+        map.put("okContentList2", okContentList2);
         return map;
     }
 }

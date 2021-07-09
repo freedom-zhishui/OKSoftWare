@@ -178,9 +178,11 @@ public class ReadExcel {
                                 String oldYear = String.valueOf(NumberUtils.toInt(year)-1);
                                 String newYear = String.valueOf(NumberUtils.toInt(year)+1);
 
-
+                                // 防止订单号注入
+                                String checkNote  ="";
+                                if(note.length()>13)checkNote=note.substring(0,5).trim().replace("\\","");
                                 // 沐海官网订单号是以 年+月+日+时分秒
-                                if(note.contains(year) || note.contains(oldYear)  || note.contains(newYear)){
+                                if(checkNote.contains(year) || checkNote.contains(oldYear)  || checkNote.contains(newYear)){
                                     // 截取符合需求的沐海订单号
                                     int index  = getWordIndex(note);
                                     note  = note.substring(0,index).trim().replace("\\","");
@@ -216,6 +218,7 @@ public class ReadExcel {
                                         Boolean flag  = hashMap.containsKey(""+note);
 
                                         if(!flag){
+                                            // excel表格中可能存在有订单号但是没有物流单号的数据，算做错误信息 2001-07-09
                                             OKContent okContent2  = new OKContent();
                                             okContent2.setOrderNumber(note);
                                             okContent2.setCourierNumbers(courierNumbers);
@@ -223,9 +226,13 @@ public class ReadExcel {
                                             okContent2.setCustomer(customer);
                                             okContent2.setProductName(productName);
                                             okContent2.setTrackNumber(trackNumber);
-                                            arrayList.add(okContent2);
-                                            hashMap.put(""+note,note);
-                                            orderNumbers  +=note+',';
+                                            if(StringUtils.isNotBlank(express)){
+                                                arrayList.add(okContent2);
+                                                hashMap.put(""+note,note);
+                                                orderNumbers  +=note+',';
+                                            }else{
+                                                duplicateList.add(okContent2);
+                                            }
                                         }else {
                                             // 当flag为true时，记录重复订单号的数据，并把对应的物流单号记录下来
                                             OKContent okContent1  = new OKContent();
@@ -248,10 +255,10 @@ public class ReadExcel {
                     }
                 }
             }
-            orderNumbers = orderNumbers.substring(0,orderNumbers.length()-1).substring(0,orderNumbers.length()-1);
+            if(StringUtils.isNotBlank(orderNumbers))orderNumbers = orderNumbers.substring(0,orderNumbers.length()-1).substring(0,orderNumbers.length()-1);
             mapResult.put("screen","成功筛选出"+arrayList.size()+"个");
             mapResult.put("data",arrayList);
-            mapResult.put("Duplicate","共"+duplicateList.size()+"数据重复");
+            mapResult.put("Duplicate","共"+duplicateList.size()+"数据重复/异常");
             mapResult.put("DuplicateData",duplicateList);
             mapResult.put("orderNumbers",orderNumbers);
 
