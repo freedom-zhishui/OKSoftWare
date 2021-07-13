@@ -89,6 +89,32 @@
             createTimeFrom,
             createTimeTo,
             repeatDataStr;
+        // 这种写法是为了解决，layui动态onClick事件赋值的问题   2021-07-13日  Puddy修复。
+        window.test = function (a){
+            repeatDataStr =$("#S"+a).html();
+            let  str='<table class="layui-table"><tr><td class="layui-fluid">顾客</td><td>产品名称</td><td>发货单号</td><td>快递公司</td><td>muhai官网订单号</td><td>物流订单号</td></tr>'
+            let data = JSON.parse(repeatDataStr);
+            for (let i=0;i<data.length;i++){
+                str+= '<tr><td>'+data[i].customer+'</td><td>'+data[i].productName+'</td><td>'+data[i].trackNumber+'</td><td>'+data[i].express+'</td><td>'+data[i].orderNumber+'</td><td>'+ data[i].courierNumbers+'</td></tr>';
+            }
+            str+='</table>';
+
+
+            // layer.msg(repeatDataStr);
+            layer.open({
+                area: $(window).width() <= 750 ? '90%' : '70%',
+                title:"excel表重复数据",
+                btn: ["关闭"],
+                yes: function (index, layero) {
+                    layer.closeAll();
+                },
+                type: 1,
+                anim: 4,
+                offset: '30px',
+                content:str //这里content是一个普通的String
+            });
+            //此处放置函数内容
+        }
 
         laydate.render({
             elem: '#log-createTime',
@@ -236,39 +262,12 @@
             let str;
             if(d.repeatData != null &&  d.repeatData!=""){
                 repeatDataStr = d.repeatData;
-                str='<button type="button" class="layui-btn layui-btn-normal layui-icon-export" id="jumpWindows" >查看</button><p style="display: none" id="jumps">'+repeatDataStr+'</p>'
-
+                str='<button type="button" class="layui-btn layui-btn-normal layui-icon-export" onclick="test('+d.id+');">查看</button><p style="display: none" id="S'+d.id +'">'+repeatDataStr+'</p>'
             }else{
                 str='<p>无重复数据</p>'
             }
             return str;
         }
-
-        $(document).on('click','#jumpWindows',function() {
-
-            let  str='<table class="layui-table"><tr><td class="layui-fluid">顾客</td><td>产品名称</td><td>发货单号</td><td>快递公司</td><td>muhai官网订单号</td><td>物流订单号</td></tr>'
-            let data = JSON.parse(repeatDataStr);
-            for (let i=0;i<data.length;i++){
-                str+= '<tr><td>'+data[i].customer+'</td><td>'+data[i].productName+'</td><td>'+data[i].trackNumber+'</td><td>'+data[i].express+'</td><td>'+data[i].orderNumber+'</td><td>'+ data[i].courierNumbers+'</td></tr>';
-            }
-            str+='</table>';
-
-
-            // layer.msg(repeatDataStr);
-            layer.open({
-                area: $(window).width() <= 750 ? '90%' : '70%',
-                title:"excel表重复数据",
-                btn: ["关闭"],
-                yes: function (index, layero) {
-                    layer.closeAll();
-                },
-                type: 1,
-                anim: 4,
-                offset: '30px',
-                content:str //这里content是一个普通的String
-            });
-        })
-
         function deleteLogs(deptIds) {
             febs.get(ctx + 'OKExcel/delete/' + deptIds, null, function () {
                 febs.alert.success('删除系统OK软件对接沐海官网成功');
