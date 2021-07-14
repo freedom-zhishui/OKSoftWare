@@ -178,14 +178,21 @@ public class ReadExcel {
                                 String oldYear = String.valueOf(NumberUtils.toInt(year)-1);
                                 String newYear = String.valueOf(NumberUtils.toInt(year)+1);
 
-                                // 防止订单号注入
+                                //1.2 防止订单号注入
                                 String checkNote  ="";
+                                //1.3 匹配备注内容是否包含“\”,因为有些特殊备注信息除没有“\”外，可满足其它所有条件   Puddy 2021-07-14 10:12
+                                Boolean checkSlash  =false;
+                                Boolean checkNoteSlash = false;
                                 if(note.length()>13)checkNote=note.substring(0,5).trim().replace("\\","");
+                                if(note.contains("\\")) checkSlash=true;
+                                if(checkNote.contains(year) || checkNote.contains(oldYear)  || checkNote.contains(newYear))  checkNoteSlash=true;
                                 // 沐海官网订单号是以 年+月+日+时分秒
-                                if(checkNote.contains(year) || checkNote.contains(oldYear)  || checkNote.contains(newYear)){
+                                if(checkSlash && checkNoteSlash ){
                                     // 截取符合需求的沐海订单号
                                     int index  = getWordIndex(note);
+                                    System.out.println(note);
                                     note  = note.substring(0,index).trim().replace("\\","");
+
                                     String contact  = note.substring(0,12);  // 截取订单的前12位作为拼接头
                                     //1.2 如果截取的数值包含“、”，split(",")
                                     if (note.contains("、")){
@@ -256,7 +263,7 @@ public class ReadExcel {
                 }
             }
             if(StringUtils.isNotBlank(orderNumbers))orderNumbers = orderNumbers.substring(0,orderNumbers.length()-1).substring(0,orderNumbers.length()-1);
-            mapResult.put("screen","成功筛选出"+arrayList.size()+"个");
+            mapResult.put("screen","成功筛选出"+(arrayList.size()+duplicateList.size())+"个");
             mapResult.put("data",arrayList);
             mapResult.put("Duplicate","共"+duplicateList.size()+"数据重复/异常");
             mapResult.put("DuplicateData",duplicateList);
