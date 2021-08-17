@@ -191,8 +191,17 @@ public class ReadExcel {
                                     // 截取符合需求的沐海订单号
                                     int index  = getWordIndex(note);
                                     System.out.println(note);
+                                    //1.4 年份虽然符合沐海系统订单格式，但是没有中文备注
+                                    if(index==0){
+                                       continue;
+                                    }
                                     note  = note.substring(0,index).trim().replace("\\","");
-
+                                    // 1.5  如果备注信息满足以上所有条件，但是不满足沐海订单在没有“、”的情况下大于16位长度，也证明此订单并不符合沐海订单
+                                    // 例如： \2020896759766895114=发货不要贴小票！！！！！\10寸.jpg
+                                    System.out.println(note+"="+note.length());
+                                    if(!note.contains("、")){
+                                        if(note.length()>16) continue;
+                                    }
                                     String contact  = note.substring(0,12);  // 截取订单的前12位作为拼接头
                                     //1.2 如果截取的数值包含“、”，split(",")
                                     if (note.contains("、")){
