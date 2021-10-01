@@ -135,11 +135,17 @@ public class OKExcelController extends BaseController {
                             String[] data = okContent.getExpress().split("-");
                             express = data[0];
                         } else {
-                            express = okContent.getExpress();
+                            // 在快递匹配时，有时并不能穷举所有的规则，所以在判断的执行标准上是存在疏漏的  2021-10-01
+                            if(okContent.getExpress().contains("德邦")){
+                               express="德邦";
+                            }else{
+                                express = okContent.getExpress();
+                            }
                         }
                         gmtx_express.setEName(express);
                         // 获取到完整的物流订单信息
                         gmtx_express = gmtxExpressService.findgmtxExpress(gmtx_express);
+//                        System.out.println("执行到这里了= "+ gmtx_express.getEName());
 
                         //3.更新gmtx_order表
                         //update gmtx_order set shipping_code = "SF1300414538167", order_state = 30, delay_time = unix_timestamp(now()) where order_id = 36098 and store_id = 16;
