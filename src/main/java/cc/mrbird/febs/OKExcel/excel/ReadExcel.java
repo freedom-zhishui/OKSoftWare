@@ -11,6 +11,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Slf4j
 public class ReadExcel {
 
@@ -88,7 +91,7 @@ public class ReadExcel {
 
             return result;
         }
-
+    /*Excel解析*/
     private static String parsesExcel(Workbook wb, List arrayList, List duplicateList, Map<String, Object> mapResult, List<Map<String, String>> list, Sheet sheet, Map<String, Object> hashMap) {
         Row row = null;
         if (wb != null) {
@@ -172,36 +175,40 @@ public class ReadExcel {
                             if(StringUtils.isBlank(note)) {
                                 continue;
                             }else{
-                                //1.1 将备注内容进行截取，截取格式：\2021041103220701、0801  俞丹=磁悬浮360-540（3框3画）
+                                //1.1.1 将备注内容进行截取，截取格式：\2021041103220701、0801  俞丹=磁悬浮360-540（3框3画）
                                 String year  = getSysYear();
                                 //当前年加一或者减一都可以匹配过
                                 String oldYear = String.valueOf(NumberUtils.toInt(year)-1);
                                 String newYear = String.valueOf(NumberUtils.toInt(year)+1);
 
-                                //1.2 防止订单号注入
+                                //1.1.2 防止订单号注入
                                 String checkNote  ="";
-                                //1.3 匹配备注内容是否包含“\”,因为有些特殊备注信息除没有“\”外，可满足其它所有条件   Puddy 2021-07-14 10:12
+                                //1.1.3 匹配备注内容是否包含“\”,因为有些特殊备注信息除没有“\”外，可满足其它所有条件   Puddy 2021-07-14 10:12
                                 Boolean checkSlash  =false;
                                 Boolean checkNoteSlash = false;
                                 if(note.length()>13)checkNote=note.substring(0,5).trim().replace("\\","");
                                 if(note.contains("\\")) checkSlash=true;
                                 if(checkNote.contains(year) || checkNote.contains(oldYear)  || checkNote.contains(newYear))  checkNoteSlash=true;
-                                // 沐海官网订单号是以 年+月+日+时分秒
+                                // 沐海官网订单号是以 年+月+日+时分秒   年份判断成功
                                 if(checkSlash && checkNoteSlash ){
                                     // 截取符合需求的沐海订单号
                                     int index  = getWordIndex(note);
                                     System.out.println(note);
-                                    //1.4 年份虽然符合沐海系统订单格式，但是没有中文备注
+                                    //1.1.4 年份虽然符合沐海系统订单格式，但是没有中文备注
                                     if(index==0){
                                        continue;
                                     }
+                                    // 截取沐海官网订单号，这时会存在一个问题，就是年份符合但是沐海订单却不符合的情况例：202109
                                     note  = note.substring(0,index).trim().replace("\\","");
-                                    // 1.5  如果备注信息满足以上所有条件，但是不满足沐海订单在没有“、”的情况下大于16位长度，也证明此订单并不符合沐海订单
+                                    // 1.1.5  如果备注信息满足以上所有条件，但是不满足沐海订单在没有“、”的情况下大于16位长度，也证明此订单并不符合沐海订单
                                     // 例如： \2020896759766895114=发货不要贴小票！！！！！\10寸.jpg
                                     System.out.println(note+"="+note.length());
-                                    if(!note.contains("、")){
+                                    // 证明没匹配到
+                                    if(!note.contains("、") && getFirstWordIndex(note)==0 ){
                                         if(note.length()>16) continue;
                                     }
+
+
                                     String contact  = note.substring(0,12);  // 截取订单的前12位作为拼接头
                                     //1.2 如果截取的数值包含“、”，split(",")
                                     if (note.contains("、")){
@@ -230,11 +237,20 @@ public class ReadExcel {
                                         // 1.3 如果不含有，则要判断另外一种情况，就是存在相同订单不同物流订单情况，并且对待相同订单号只录入一条物流信息
                                         // 相同订单号使用不同的快递单号时，只更新一条物流信息
                                     }else{
-                                        // 判断map中是否已含有相同的订单,如果存在则不添加
+                                        //1.3.1 判断map中是否已含有相同的订单,如果存在则不添加
+                                        //1.3.2 防止当前订单含有英文但是根据中文下标已经把英文截取进来的情况
+                                        int indexWord  = getFirstWordIndex(note);
+                                        System.out.println(indexWord);
+                                        String resultNote ="";
+                                        if(indexWord>0){
+                                            // 例子：2021100704189901 Steps Portraits   截取   2021-10-12 Puddy
+                                            resultNote  = note.substring(0,indexWord).trim();
+                                            note  = resultNote;
+                                        }
                                         Boolean flag  = hashMap.containsKey(""+note);
 
                                         if(!flag){
-                                            // excel表格中可能存在有订单号但是没有物流单号的数据，算做错误信息 2001-07-09
+                                            //1.3.3 excel表格中可能存在有订单号但是没有物流单号的数据，算做错误信息 2021-07-09
                                             OKContent okContent2  = new OKContent();
                                             okContent2.setOrderNumber(note);
                                             okContent2.setCourierNumbers(courierNumbers);
@@ -250,7 +266,7 @@ public class ReadExcel {
                                                 duplicateList.add(okContent2);
                                             }
                                         }else {
-                                            // 当flag为true时，记录重复订单号的数据，并把对应的物流单号记录下来
+                                            //1.3.4 当flag为true时，记录重复订单号的数据，并把对应的物流单号记录下来
                                             OKContent okContent1  = new OKContent();
                                             okContent1.setOrderNumber(note);
                                             okContent1.setCourierNumbers(courierNumbers);
@@ -310,6 +326,19 @@ public class ReadExcel {
 
         return year;
 
+    }
+
+    public static int getFirstWordIndex(String note){
+        // 获取订单中第一个出现的字母
+        Pattern pattern = Pattern.compile("[a-zA-Z]");
+        Matcher matcher = pattern.matcher(note);
+        int result = 0;
+        if (matcher.find()) {
+            System.out.println(note+"出现了英文字符，下标为="+note.indexOf(matcher.group()));
+            System.out.println(note.substring(0,note.indexOf(matcher.group())).trim());
+            result = note.indexOf(matcher.group());
+        }
+        return  result;
     }
 
     public static void main(String[] args) {

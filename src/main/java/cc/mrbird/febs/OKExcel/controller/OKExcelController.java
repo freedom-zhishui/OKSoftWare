@@ -7,6 +7,7 @@ import cc.mrbird.febs.common.controller.BaseController;
 import cc.mrbird.febs.common.entity.FebsResponse;
 import cc.mrbird.febs.common.entity.QueryRequest;
 import cc.mrbird.febs.common.entity.Strings;
+import cc.mrbird.febs.utils.PropertiesMap;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -111,6 +112,8 @@ public class OKExcelController extends BaseController {
         AtomicInteger gmtxCount  = new AtomicInteger();
 
         List<OKContent>  okContentList1  = new ArrayList<>();
+        // 去读properties中的快递公司信息   2021-10-12  Puddy
+        Map<String, String> courierCompany  = PropertiesMap.getProperties();
         // 错误的订单信息
         List<OKContent>  okContentList2  = new ArrayList<>();
         okContentList.forEach(okContent -> {
@@ -131,6 +134,8 @@ public class OKExcelController extends BaseController {
                     Gmtx_Express gmtx_express = new Gmtx_Express();
                     String express = "";
                     if(StringUtils.isNotBlank(okContent.getExpress())){
+                       /*  老版快递公司截取方式，因为OK软件物流公司的录入是郭毅根据工厂伙伴
+                       的使用习惯进行编写录入，所以没有任何规则可言，故注释  2021-10-12
                         if (okContent.getExpress().contains("-")) {
                             String[] data = okContent.getExpress().split("-");
                             express = data[0];
@@ -141,7 +146,11 @@ public class OKExcelController extends BaseController {
                             }else{
                                 express = okContent.getExpress();
                             }
-                        }
+                        }*/
+
+                        // OK软件导出的Excel中的快递公司需要在Properties中预先编写
+                        express =  courierCompany.get(okContent.getExpress());
+
                         gmtx_express.setEName(express);
                         // 获取到完整的物流订单信息
                         gmtx_express = gmtxExpressService.findgmtxExpress(gmtx_express);
