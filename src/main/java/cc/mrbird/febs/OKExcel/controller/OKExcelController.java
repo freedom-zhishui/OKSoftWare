@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -55,7 +56,7 @@ public class OKExcelController extends BaseController {
     @PostMapping
     @RequiresPermissions("OKExcel:add")
     @ControllerEndpoint(operation = "新增OK导入excel信息", exceptionMessage = "新增OK导入excel信息失败")
-    public FebsResponse addJob(@Valid OKExcel okExcel) {
+    public FebsResponse addJob(@Valid OKExcel okExcel) throws UnsupportedEncodingException {
         JSONObject json_test = JSONObject.parseObject(okExcel.getExcelData());
         String  jso =json_test.get("result").toString();
         JSONObject json = JSONObject.parseObject(jso);
@@ -101,7 +102,7 @@ public class OKExcelController extends BaseController {
     }*/
 
     // 更新沐海物流信息
-    private Map updateMuHaiOrder(List<OKContent> okContentList) {
+    private Map updateMuHaiOrder(List<OKContent> okContentList) throws UnsupportedEncodingException {
         // gmtx_order 更新数量
         AtomicInteger gmtxOrderCount = new AtomicInteger();
         // gmtx_order_common 更新数量

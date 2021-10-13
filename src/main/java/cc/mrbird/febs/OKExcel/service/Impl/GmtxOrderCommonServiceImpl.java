@@ -32,10 +32,6 @@ public class GmtxOrderCommonServiceImpl extends ServiceImpl<Gmtx_Order_CommonMap
 
         int i = baseMapper.update(orderCommon, queryWrapper);
         System.out.println("影响的行数：" + i);
-
-        System.out.println("影响的行数：" + i);
-
-
         return i;
     }
 }
